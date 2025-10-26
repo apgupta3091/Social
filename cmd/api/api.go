@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/apgupta3091/social/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -15,6 +16,7 @@ type application struct {
 
 type config struct {
 	addr string
+	store store.Storage
 }
 
 func (app *application) mount() http.Handler {
