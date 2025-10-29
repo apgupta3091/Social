@@ -4,5 +4,15 @@
   },
   "editor.inlineSuggest.enabled": false,
   "cursor.cpp.disabledLanguages": ["go"],
-  "cursor.general.enableAutocompletion": false
+  "cursor.general.enableAutocompletion": false,
+
+  "editor.formatOnSave": true,
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "golang.go",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+  "go.formatTool": "goimports" // optional, if you prefer goimports over gofmt
 }
