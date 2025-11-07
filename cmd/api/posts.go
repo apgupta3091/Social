@@ -14,6 +14,7 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	var payload createPostPayload
+
 	if err := readJSON(w, r, payload); err != nil {
 		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
