@@ -30,11 +30,18 @@ func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := writeJSON(w, http.StatusOK, post); err != nil {
+	comments, err := app.store.Comments.GetByPostID(ctx, id)
+	if err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
 
+	post.Comments = comments
+
+	if err := writeJSON(w, http.StatusOK, post); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
 }
 
 func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request) {
