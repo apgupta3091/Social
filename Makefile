@@ -17,3 +17,7 @@ migrate-down:
 .PHONY: migrate-force
 migrate-force:
 	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) force $(filter-out $@,$(MAKECMDGOALS))
+
+.PHONY: seed
+seed:
+	@go run cmd/migrate/seed/main.go
