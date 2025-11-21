@@ -17,6 +17,41 @@ type User struct {
 	CreatedAt string `json:"created_at"`
 }
 
+func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
+	query := `
+		SELECT id, username, email, password, created_at
+		FROM users
+		WHERE id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeOutDuration)
+	defer cancel()
+
+	var user User
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		userID,
+	).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
+}
+
 func (s *UserStore) Create(ctx context.Context, user *User) error {
 	query := `
 	INSERT INTO users (username, password, email) VALUES($1, $2, $3) RETURNING id,
