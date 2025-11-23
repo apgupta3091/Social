@@ -16,7 +16,7 @@ var (
 type Storage struct {
 	Posts interface {
 		GetByID(context.Context, int64) (*Post, error)
-		GetUserFeed(context.Context, int64) (*[]PostWithMetadata, error)
+		GetUserFeed(context.Context, int64, PaginatedFeedQuery) ([]PostWithMetadata, error)
 		Create(context.Context, *Post) error
 		Update(context.Context, *Post) error
 		Delete(context.Context, int64) error
