@@ -17,7 +17,13 @@ type Post struct {
 	CreatedAt string    `json:"created_at"`
 	UpdatedAt string    `json:"updated_at"`
 	Comments  []Comment `json:"comments"`
+	User      User      `json:"user"`
 	Version   int       `json:"version"`
+}
+
+type PostWithMetadata struct {
+	Post
+	CommentsCount int `json:"comments_count"`
 }
 type PostStore struct {
 	db *sql.DB
@@ -56,6 +62,10 @@ func (s *PostStore) GetByID(ctx context.Context, postID int64) (*Post, error) {
 	}
 
 	return &post, nil
+}
+
+func (s *PostStore) GetUserFeed(ctx context.Context, userID int64) (*[]PostWithMetadata, error) {
+
 }
 
 func (s *PostStore) Create(ctx context.Context, post *Post) error {
