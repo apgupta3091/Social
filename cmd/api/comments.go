@@ -6,14 +6,29 @@ import (
 	"github.com/apgupta3091/social/internal/store"
 )
 
+type createCommentPayload struct {
+	UserID  int64  `json:"user_id" validate:"required"`
+	Content string `json:"content" validate:"required,max=100"`
+}
+
+// CreateComment godoc
+//
+//	@Summary		Creates a comment on a post
+//	@Description	Creates a new comment on a post by post ID
+//	@Tags			comments
+//	@Accept			json
+//	@Produce		json
+//	@Param			postID	path		int						true	"Post ID"
+//	@Param			comment	body		createCommentPayload	true	"Comment creation payload"
+//	@Success		201		{object}	store.Comment			"Created comment"
+//	@Failure		400		{object}	error					"Invalid payload"
+//	@Failure		404		{object}	error					"Post not found"
+//	@Failure		500		{object}	error					"Internal server error"
+//	@Security		ApiKeyAuth
+//	@Router			/posts/{postID}/comments [post]
 func (app *application) createCommentHandler(w http.ResponseWriter, r *http.Request) {
 	// Get post from context (validated by postContextMiddleware)
 	post := getPostFromCtx(r)
-
-	type createCommentPayload struct {
-		UserID  int64  `json:"user_id" validate:"required"`
-		Content string `json:"content" validate:"required,max=100"`
-	}
 
 	var payload createCommentPayload
 
