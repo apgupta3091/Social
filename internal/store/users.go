@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -71,7 +72,7 @@ func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 	return &user, nil
 }
 
-func (s *UserStore) Create(ctx context.Context, user *User) error {
+func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	query := `
 	INSERT INTO users (username, password, email) VALUES($1, $2, $3) RETURNING id,
 	created_at
@@ -98,8 +99,34 @@ func (s *UserStore) Create(ctx context.Context, user *User) error {
 	return nil
 }
 
-func (s *UserStore) CreateAndInvite(ctx context.Context, user *User, token string) error {
-	//Transaction wrapper
-	//Create the user
-	//Create the invite
+func (s *UserStore) CreateAndInvite(ctx context.Context, user *User, token string, invitationExp time.Duration) error {
+	return withTx(s.db, ctx, func(tx *sql.Tx) error {
+		//create the user
+		if err := s.Create(ctx, tx, user); err != nil {
+			return err
+		}
+
+		//create the invitation
+		if err := s.createUserInvitation(ctx, tx, token, invitationExp, user.ID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+}
+
+func (s *UserStore) createUserInvitation(ctx context.Context, tx *sql.Tx, token string, exp time.Duration, userID int64) error {
+	query := `
+		INSERT INTO user_invitations (token, user_id, expiry) VALUES ($1, $2, $3)
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeOutDuration)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, token, userID, time.Now().Add(exp))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
