@@ -91,7 +91,7 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 		ctx,
 		query,
 		user.Username,
-		user.Password,
+		user.Password.hash,
 		user.Email,
 	).Scan(
 		&user.ID,
@@ -99,7 +99,7 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	)
 
 	if err != nil {
-		switch err {
+		switch {
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
 			return ErrDuplicateEmail
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_username_key"`:
@@ -107,6 +107,7 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 		default:
 			return err
 		}
+
 	}
 
 	return nil
