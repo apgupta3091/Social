@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/apgupta3091/social/docs"
+	"github.com/apgupta3091/social/internal/mailer"
 	"github.com/apgupta3091/social/internal/store"
 	"go.uber.org/zap"
 
@@ -18,6 +19,7 @@ type application struct {
 	config config
 	store  store.Storage
 	logger *zap.SugaredLogger
+	mailer mailer.Client
 }
 
 type config struct {
