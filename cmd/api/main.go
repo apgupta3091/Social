@@ -67,7 +67,10 @@ func main() {
 
 	store := store.NewStorage(db)
 
-	mailer := mailer.NewSendGrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
+	mailer, err := mailer.NewSendGrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
+	if err != nil {
+		logger.Fatal(err)
+	}
 
 	defer db.Close()
 

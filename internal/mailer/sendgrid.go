@@ -2,8 +2,8 @@ package mailer
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
-	"log"
 	"text/template"
 	"time"
 
@@ -17,17 +17,22 @@ type SendGridMailer struct {
 	client    *sendgrid.Client
 }
 
-func NewSendGrid(apiKey, fromEmail string) *SendGridMailer {
+func NewSendGrid(apiKey, fromEmail string) (*SendGridMailer, error) {
+
+	if apiKey == "" {
+		return &SendGridMailer{}, errors.New("api key is required")
+	}
+
 	client := sendgrid.NewSendClient(apiKey)
 
 	return &SendGridMailer{
 		fromEmail: fromEmail,
 		apiKey:    apiKey,
 		client:    client,
-	}
+	}, nil
 }
 
-func (m *SendGridMailer) Send(templateFile, username, email string, data any, isSandbox bool) error {
+func (m *SendGridMailer) Send(templateFile, username, email string, data any, isSandbox bool) (int, error) {
 	from := mail.NewEmail(FromName, m.fromEmail)
 	to := mail.NewEmail(username, email)
 
@@ -35,19 +40,19 @@ func (m *SendGridMailer) Send(templateFile, username, email string, data any, is
 
 	tmpl, err := template.ParseFS(FS, "templates/"+templateFile)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	subject := new(bytes.Buffer)
 	err = tmpl.ExecuteTemplate(subject, "subject", data)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	body := new(bytes.Buffer)
 	err = tmpl.ExecuteTemplate(body, "body", data)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	message := mail.NewSingleEmail(from, subject.String(), to, "", body.String())
@@ -58,20 +63,17 @@ func (m *SendGridMailer) Send(templateFile, username, email string, data any, is
 		},
 	})
 
+	var retryErr error
 	for i := range MaxRetries {
-		response, err := m.client.Send(message)
-		if err != nil {
-			log.Printf("failed to send email to %v, attempt %d of %d", email, i+1, MaxRetries)
-			log.Printf("error: %v", err.Error())
-
-			//Exponenential backoff
+		response, retryErr := m.client.Send(message)
+		if retryErr != nil {
+			// Exponenential backoff
 			time.Sleep(time.Second * time.Duration(i+1))
 			continue
 		}
 
-		log.Printf("email sent with status code %v", response.StatusCode)
-		return nil
+		return response.StatusCode, nil
 	}
 
-	return fmt.Errorf("failed to send email after %d attempts", MaxRetries)
+	return -1, fmt.Errorf("failed to send email after %d attempts error: %v", MaxRetries, retryErr)
 }
