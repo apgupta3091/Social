@@ -118,3 +118,43 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 }
+
+type CreateUserTokenPayload struct {
+	Email    string `json:"email" validate:"required,email,max=255"`
+	Password string `json:"password" validate:"required,min=3,max=72"`
+}
+
+func (app *application) createTokenHandler(w http.ResponseWriter, r *http.Request) {
+	//parse payload creds
+	var payload CreateUserTokenPayload
+
+	if err := readJSON(w, r, &payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	//fetch the user check if exists from payload
+	user, err := app.store.Users.GetByEmail(r.Context(), payload.Email)
+	if err != nil {
+		switch err {
+		case store.ErrNotFound:
+			app.unauthorizedErrorResponse(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return
+
+	}
+
+	//generate the token -> add claims
+
+	if err := app.jsonResponse(w, http.StatusCreated, ""); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/apgupta3091/social/docs"
+	"github.com/apgupta3091/social/internal/auth"
 	"github.com/apgupta3091/social/internal/mailer"
 	"github.com/apgupta3091/social/internal/store"
 	"go.uber.org/zap"
@@ -16,10 +17,11 @@ import (
 )
 
 type application struct {
-	config config
-	store  store.Storage
-	logger *zap.SugaredLogger
-	mailer mailer.Client
+	config        config
+	store         store.Storage
+	logger        *zap.SugaredLogger
+	mailer        mailer.Client
+	authenticator auth.Authenticator
 }
 
 type config struct {
@@ -103,6 +105,7 @@ func (app *application) mount() http.Handler {
 		//Public routes
 		r.Route("/authentication", func(r chi.Router) {
 			r.Post("/user", app.registerUserHandler)
+			r.Post("/token", app.createTokenHandler)
 		})
 	})
 	return r
