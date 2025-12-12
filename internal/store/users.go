@@ -46,6 +46,20 @@ func (p *password) Set(text string) error {
 	return nil
 }
 
+// Scan implements sql.Scanner interface to read password hash from database
+func (p *password) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	p.hash = value.([]byte)
+	return nil
+}
+
+// Compare checks if the provided password matches the stored hash
+func (p *password) Compare(text string) error {
+	return bcrypt.CompareHashAndPassword(p.hash, []byte(text))
+}
+
 func (s *UserStore) GetByID(ctx context.Context, userID int64) (*User, error) {
 	query := `
 		SELECT id, username, email, password, created_at

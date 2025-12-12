@@ -35,11 +35,18 @@ type config struct {
 }
 type authConfig struct {
 	basic basicConfig
+	token tokenConfig
 }
 
 type basicConfig struct {
 	user string
 	pass string
+}
+
+type tokenConfig struct {
+	secret string
+	exp    time.Duration
+	iss    string
 }
 
 type mailConfig struct {
