@@ -9,6 +9,7 @@ import (
 	"github.com/apgupta3091/social/internal/auth"
 	"github.com/apgupta3091/social/internal/mailer"
 	"github.com/apgupta3091/social/internal/store"
+	"github.com/apgupta3091/social/internal/store/cache"
 	"go.uber.org/zap"
 
 	"github.com/go-chi/chi/v5"
@@ -19,6 +20,7 @@ import (
 type application struct {
 	config        config
 	store         store.Storage
+	cacheStorage  cache.Storage
 	logger        *zap.SugaredLogger
 	mailer        mailer.Client
 	authenticator auth.Authenticator
@@ -32,6 +34,14 @@ type config struct {
 	mail        mailConfig
 	frontendURL string
 	auth        authConfig
+	redisCfg    redisConfig
+}
+
+type redisConfig struct {
+	addr    string
+	pw      string
+	db      int
+	enabled bool
 }
 type authConfig struct {
 	basic basicConfig
