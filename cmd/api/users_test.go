@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
@@ -10,12 +9,31 @@ func TestGetUser(t *testing.T) {
 
 	app := newTestApplication(t)
 	mux := app.mount()
+
+	testToken := "abc123"
 	t.Run("should not allow unauthenticated requeste", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, "v1/users/1", nil)
+		req, err := http.NewRequest(http.MethodGet, "/v1/users/1", nil)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		rr := httptest.NewRecorder()
+		rr := executeRequest(req, mux)
+
+		checkResponseCode(t, http.StatusUnauthorized, rr.Code)
+
+	})
+
+	t.Run("should not allow unauthenticated request", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, "/v1/users/1", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req.Header.Set("Authorization", "Bearer "+testToken)
+
+		rr := executeRequest(req, mux)
+
+		checkResponseCode(t, http.StatusOK, rr.Code)
+
 	})
 }
