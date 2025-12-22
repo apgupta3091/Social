@@ -10,7 +10,10 @@ func TestGetUser(t *testing.T) {
 	app := newTestApplication(t)
 	mux := app.mount()
 
-	testToken := "abc123"
+	testToken, err := app.authenticator.GenerateToken(nil)
+	if err != nil {
+		t.Fail()
+	}
 	t.Run("should not allow unauthenticated requeste", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, "/v1/users/1", nil)
 		if err != nil {
