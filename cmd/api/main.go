@@ -7,6 +7,7 @@ import (
 	"github.com/apgupta3091/social/internal/db"
 	"github.com/apgupta3091/social/internal/env"
 	"github.com/apgupta3091/social/internal/mailer"
+	"github.com/apgupta3091/social/internal/ratelimiter"
 	"github.com/apgupta3091/social/internal/store"
 	"github.com/apgupta3091/social/internal/store/cache"
 	"github.com/go-redis/redis/v8"
@@ -68,6 +69,11 @@ func main() {
 				apiKey: env.GetString("SENDGRID_API_KEY", ""),
 			},
 		},
+		ratelimiter: ratelimiter.Config{
+			RequestsPerTimeFrame: env.GetInt("RATE_LIMITER_REQUEST_COUNT", 20),
+			TimeFrame:            time.Second * 5,
+			Enabled:              env.GetBool("RATE_LIMITER_ENABLED", true),
+		},
 	}
 
 	//LOGGER
@@ -85,6 +91,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	//Mailer
 	mailer, err := mailer.NewSendGrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
 	if err != nil {
 		logger.Fatal(err)
@@ -102,6 +109,13 @@ func main() {
 		logger.Info("redis cache connection pool established")
 	}
 
+	//Rate Limiter
+	ratelimiter := ratelimiter.NewFixedWindowLimiter(
+		cfg.ratelimiter.RequestsPerTimeFrame,
+		cfg.ratelimiter.TimeFrame,
+	)
+
+	//Set Store/Cache
 	store := store.NewStorage(db)
 	cacheStorage := cache.NewRedisStorage(rdb)
 
@@ -112,6 +126,7 @@ func main() {
 		logger:        logger,
 		mailer:        mailer,
 		authenticator: jwtAuthenticator,
+		ratelimiter:   ratelimiter,
 	}
 
 	mux := app.mount()

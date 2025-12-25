@@ -13,6 +13,7 @@ import (
 	"github.com/apgupta3091/social/docs"
 	"github.com/apgupta3091/social/internal/auth"
 	"github.com/apgupta3091/social/internal/mailer"
+	"github.com/apgupta3091/social/internal/ratelimiter"
 	"github.com/apgupta3091/social/internal/store"
 	"github.com/apgupta3091/social/internal/store/cache"
 	"go.uber.org/zap"
@@ -29,6 +30,7 @@ type application struct {
 	logger        *zap.SugaredLogger
 	mailer        mailer.Client
 	authenticator auth.Authenticator
+	ratelimiter   ratelimiter.Limiter
 }
 
 type config struct {
@@ -40,6 +42,7 @@ type config struct {
 	frontendURL string
 	auth        authConfig
 	redisCfg    redisConfig
+	ratelimiter ratelimiter.Config
 }
 
 type redisConfig struct {
@@ -88,12 +91,14 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(app.RateLimterMiddleware)
 
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
 
-		r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheckHandler)
+		// r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheckHandler)
+		r.Get("/health", app.healthCheckHandler)
 
 		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))

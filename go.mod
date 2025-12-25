@@ -6,6 +6,7 @@ require (
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/go-playground/validator/v10 v10.28.0
 	github.com/lib/pq v1.10.9
+	github.com/nxadm/tail v1.4.8
 	github.com/sendgrid/sendgrid-go v3.16.1+incompatible
 	github.com/swaggo/http-swagger v1.3.4
 )

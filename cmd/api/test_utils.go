@@ -6,12 +6,13 @@ import (
 	"testing"
 
 	"github.com/apgupta3091/social/internal/auth"
+	"github.com/apgupta3091/social/internal/ratelimiter"
 	"github.com/apgupta3091/social/internal/store"
 	"github.com/apgupta3091/social/internal/store/cache"
 	"go.uber.org/zap"
 )
 
-func newTestApplication(t *testing.T) *application {
+func newTestApplication(t *testing.T, cfg config) *application {
 	t.Helper()
 
 	// logger := zap.NewNop().Sugar()
@@ -20,11 +21,22 @@ func newTestApplication(t *testing.T) *application {
 	mockCacheStore := cache.NewMockStore()
 	testAuth := &auth.TestAuthenticator{}
 
+	// Create rate limiter if enabled
+	var rateLimiter ratelimiter.Limiter
+	if cfg.ratelimiter.Enabled {
+		rateLimiter = ratelimiter.NewFixedWindowLimiter(
+			cfg.ratelimiter.RequestsPerTimeFrame,
+			cfg.ratelimiter.TimeFrame,
+		)
+	}
+
 	return &application{
 		logger:        logger,
 		store:         mockStore,
 		cacheStorage:  mockCacheStore,
 		authenticator: testAuth,
+		config:        cfg,
+		ratelimiter:   rateLimiter,
 	}
 }
 
