@@ -136,7 +136,6 @@ func main() {
 	expvar.Publish("database", expvar.Func(func() any {
 		return db.Stats()
 	}))
-
 	expvar.Publish("goroutines", expvar.Func(func() any {
 		return runtime.NumGoroutine()
 	}))
