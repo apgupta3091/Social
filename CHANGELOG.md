@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/apgupta3091/Social/compare/v1.0.0...v1.1.0) (2025-12-26)
+
+
+### Features
+
+* update api version automatically ([a25e1e9](https://github.com/apgupta3091/Social/commit/a25e1e94107edefe5c4d27ea94f60764ebbc4662))
+
 ## 1.0.0 (2025-12-26)
 
 
