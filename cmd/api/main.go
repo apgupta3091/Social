@@ -36,8 +36,15 @@ const version = "1.2.0"
 // @name						Authorization
 // @description
 func main() {
+	// Cloud Run provides PORT, fallback to ADDR for local dev
+	port := env.GetString("PORT", "")
+	addr := env.GetString("ADDR", ":8080")
+	if port != "" {
+		addr = ":" + port
+	}
+
 	cfg := config{
-		addr:        env.GetString("ADDR", ":8080"),
+		addr:        addr,
 		apiURL:      env.GetString("EXTERNAL_URL", "localhost:8080"),
 		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:4000"),
 		db: dbConfig{
