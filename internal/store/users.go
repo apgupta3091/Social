@@ -31,6 +31,13 @@ type User struct {
 	Role      Role     `json:"role"`
 }
 
+type UserWithFollowStatus struct {
+	ID         int64  `json:"id"`
+	Username   string `json:"username"`
+	CreatedAt  string `json:"created_at"`
+	IsFollowed bool   `json:"is_followed"`
+}
+
 type password struct {
 	text *string
 	hash []byte
@@ -135,6 +142,38 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 	}
 
 	return &user, nil
+}
+
+func (s *UserStore) GetAll(ctx context.Context, currentUserID int64, limit int, offset int) ([]UserWithFollowStatus, error) {
+	query := `
+		SELECT 
+			u.id, u.username, u.created_at,
+			EXISTS(SELECT 1 FROM followers f WHERE f.user_id = $1 AND f.follower_id = u.id) AS is_followed
+		FROM users u
+		WHERE u.is_active = true AND u.id != $1
+		ORDER BY u.created_at DESC
+		LIMIT $2 OFFSET $3
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeOutDuration)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, query, currentUserID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := []UserWithFollowStatus{} // Initialize as empty slice, not nil
+	for rows.Next() {
+		var u UserWithFollowStatus
+		if err := rows.Scan(&u.ID, &u.Username, &u.CreatedAt, &u.IsFollowed); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+
+	return users, nil
 }
 
 func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {

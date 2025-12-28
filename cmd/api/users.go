@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -48,6 +49,51 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 		app.internalServerError(w, r, err)
 	}
 
+}
+
+// GetAllUsers godoc
+//
+//	@Summary		Fetches all active users
+//	@Description	Fetches a paginated list of all active users with follow status
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"Limit"		default(20)
+//	@Param			offset	query		int	false	"Offset"	default(0)
+//	@Success		200		{array}		store.UserWithFollowStatus
+//	@Failure		500		{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/users [get]
+func (app *application) getAllUsersHandler(w http.ResponseWriter, r *http.Request) {
+	currentUser := getUserFromCtx(r)
+	if currentUser == nil {
+		app.unauthorizedErrorResponse(w, r, fmt.Errorf("user not found in context"))
+		return
+	}
+
+	app.logger.Infow("fetching users", "currentUserID", currentUser.ID)
+
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	if limit <= 0 || limit > 50 {
+		limit = 20
+	}
+
+	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+	if offset < 0 {
+		offset = 0
+	}
+
+	users, err := app.store.Users.GetAll(r.Context(), currentUser.ID, limit, offset)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	app.logger.Infow("users fetched", "count", len(users), "currentUserID", currentUser.ID)
+
+	if err := app.jsonResponse(w, http.StatusOK, users); err != nil {
+		app.internalServerError(w, r, err)
+	}
 }
 
 // FollowUser godoc

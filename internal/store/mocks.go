@@ -27,6 +27,10 @@ func (m *MockUserStore) GetByEmail(ctx context.Context, email string) (*User, er
 	return &User{}, nil
 }
 
+func (m *MockUserStore) GetAll(ctx context.Context, currentUserID int64, limit int, offset int) ([]UserWithFollowStatus, error) {
+	return []UserWithFollowStatus{}, nil
+}
+
 func (m *MockUserStore) CreateAndInvite(ctx context.Context, user *User, token string, invitationExp time.Duration) error {
 	return nil
 }

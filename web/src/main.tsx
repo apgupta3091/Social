@@ -5,7 +5,9 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ConfirmationPage } from "./ConfirmationPage.tsx";
 import { LoginPage } from "./LoginPage.tsx";
+import { RegisterPage } from "./RegisterPage.tsx";
 import { SinglePost } from "./SinglePost.tsx";
+import { UsersPage } from "./UsersPage.tsx";
 
 const router = createBrowserRouter([
   {
@@ -15,6 +17,14 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />,
+  },
+  {
+    path: "/users",
+    element: <UsersPage />,
   },
   {
     path: "/post/:postID",

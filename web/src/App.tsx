@@ -1,10 +1,11 @@
 import useSWR, { mutate } from "swr";
+import { useState } from "react";
 import { FeedPost, Post } from "./Post";
 import { useCookies } from "react-cookie";
 import { Navigate, useNavigate } from "react-router-dom";
 import { CreatePostForm } from "./CreatePostForm";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, ChevronLeft, ChevronRight, Users } from "lucide-react";
 
 export const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:8080/v1";
@@ -17,13 +18,32 @@ export const fetcher = (at: string) => (url: string) =>
     },
   }).then((r) => r.json());
 
+// Decode JWT to get user ID (simple base64 decode of payload)
+const getUserIdFromToken = (token: string): number | undefined => {
+  try {
+    const payload = token.split(".")[1];
+    const decoded = JSON.parse(atob(payload));
+    return decoded.sub ? parseInt(decoded.sub) : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const POSTS_PER_PAGE = 10;
+
 function App() {
   const [cookies, setCookie] = useCookies(["at"]);
   const at = cookies.at;
   const redirect = useNavigate();
+  const [page, setPage] = useState(0);
+
+  const currentUserId = at ? getUserIdFromToken(at) : undefined;
+
+  const offset = page * POSTS_PER_PAGE;
+  const feedUrl = `/users/feed?limit=${POSTS_PER_PAGE}&offset=${offset}`;
 
   const { data, error, isLoading } = useSWR<{ data: FeedPost[] }>(
-    "/users/feed",
+    feedUrl,
     at ? fetcher(at) : null
   );
 
@@ -37,10 +57,40 @@ function App() {
   };
 
   const reFetchData = () => {
-    mutate("/users/feed");
+    setPage(0); // Go back to first page to see new post
+    mutate(`/users/feed?limit=${POSTS_PER_PAGE}&offset=0`);
   };
 
+  const handlePrevPage = () => {
+    if (page > 0) setPage(page - 1);
+  };
+
+  const handleNextPage = () => {
+    if (data?.data?.length === POSTS_PER_PAGE) {
+      setPage(page + 1);
+    }
+  };
+
+  const hasNextPage = data?.data?.length === POSTS_PER_PAGE;
+  const hasPrevPage = page > 0;
+
   const handleClickPost = (id: number) => () => redirect(`/post/${id}`);
+
+  const handleDeletePost = async (postId: number) => {
+    try {
+      const response = await fetch(`${API_URL}/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${at}`,
+        },
+      });
+      if (response.ok) {
+        mutate(feedUrl); // Refresh the feed
+      }
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -53,14 +103,24 @@ function App() {
             </div>
             <h1 className="text-xl font-bold text-white">GopherSocial</h1>
           </div>
-          <Button
-            onClick={handleLogout}
-            variant="ghost"
-            className="text-slate-400 hover:text-white hover:bg-slate-700/50"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => redirect("/users")}
+              variant="ghost"
+              className="text-slate-400 hover:text-white hover:bg-slate-700/50"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Users
+            </Button>
+            <Button
+              onClick={handleLogout}
+              variant="ghost"
+              className="text-slate-400 hover:text-white hover:bg-slate-700/50"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -93,15 +153,50 @@ function App() {
               key={post.id}
               post={post}
               onClick={handleClickPost(post.id)}
+              currentUserId={currentUserId}
+              onDelete={handleDeletePost}
             />
           ))}
 
-          {data?.data?.length === 0 && (
+          {data?.data?.length === 0 && page === 0 && (
             <div className="text-center py-12 bg-slate-800/30 rounded-2xl border border-slate-700/50">
               <p className="text-slate-400">No posts yet.</p>
               <p className="text-slate-500 text-sm mt-1">
                 Follow someone or create your first post!
               </p>
+            </div>
+          )}
+
+          {data?.data?.length === 0 && page > 0 && (
+            <div className="text-center py-12 bg-slate-800/30 rounded-2xl border border-slate-700/50">
+              <p className="text-slate-400">No more posts.</p>
+            </div>
+          )}
+
+          {/* Pagination Controls - always show when there are posts */}
+          {data?.data && data.data.length > 0 && (
+            <div className="flex items-center justify-center gap-4 pt-6">
+              <Button
+                onClick={handlePrevPage}
+                disabled={!hasPrevPage}
+                variant="outline"
+                className="border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
+              </Button>
+              <span className="text-slate-400 text-sm px-4">
+                Page {page + 1}
+              </span>
+              <Button
+                onClick={handleNextPage}
+                disabled={!hasNextPage}
+                variant="outline"
+                className="border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             </div>
           )}
         </div>
