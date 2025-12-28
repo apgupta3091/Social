@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/apgupta3091/Social/compare/v1.2.0...v1.3.0) (2025-12-28)
+
+
+### Features
+
+* update go version ([487a73c](https://github.com/apgupta3091/Social/commit/487a73ca4b6faaeaaddc33dac1e1cfc20596e203))
+
 ## [1.2.0](https://github.com/apgupta3091/Social/compare/v1.1.0...v1.2.0) (2025-12-28)
 
 
