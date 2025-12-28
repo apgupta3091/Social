@@ -74,7 +74,7 @@ func (s *PostStore) GetUserFeed(ctx context.Context, userID int64, fq PaginatedF
 		LEFT JOIN comments c ON c.post_id = p.id
 		LEFT JOIN users u ON p.user_id = u.id
 		WHERE 
-			(p.user_id = $1 OR p.user_id IN (SELECT follower_id FROM followers WHERE user_id = $1)) AND
+			(p.user_id = $1 OR p.user_id IN (SELECT user_id FROM followers WHERE follower_id = $1)) AND
 			(p.title ILIKE '%' || $4 || '%' OR p.content ILIKE '%' || $4 || '%') AND
 			(p.tags @> $5 OR $5 = '{}')
 		GROUP BY p.id, u.username

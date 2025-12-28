@@ -148,7 +148,7 @@ func (s *UserStore) GetAll(ctx context.Context, currentUserID int64, limit int, 
 	query := `
 		SELECT 
 			u.id, u.username, u.created_at,
-			EXISTS(SELECT 1 FROM followers f WHERE f.user_id = $1 AND f.follower_id = u.id) AS is_followed
+			EXISTS(SELECT 1 FROM followers f WHERE f.user_id = u.id AND f.follower_id = $1) AS is_followed
 		FROM users u
 		WHERE u.is_active = true AND u.id != $1
 		ORDER BY u.created_at DESC
