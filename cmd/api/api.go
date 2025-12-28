@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"expvar"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -114,8 +113,8 @@ func (app *application) mount() http.Handler {
 		r.Get("/health", app.healthCheckHandler)
 		r.With(app.BasicAuthMiddleware()).Get("/metrics", expvar.Handler().ServeHTTP)
 
-		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
-		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
+		// Use relative URL - works for both local and production
+		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("/v1/swagger/doc.json")))
 
 		r.Route("/posts", func(r chi.Router) {
 			r.Use(app.AuthTokenMiddleware)
