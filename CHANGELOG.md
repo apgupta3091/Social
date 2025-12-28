@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/apgupta3091/Social/compare/v1.1.0...v1.2.0) (2025-12-28)
+
+
+### Features
+
+* add dockerfile ([d71e219](https://github.com/apgupta3091/Social/commit/d71e219c6f6f8771af9a6bfd92c60166e070c9e6))
+
 ## [1.1.0](https://github.com/apgupta3091/Social/compare/v1.0.0...v1.1.0) (2025-12-26)
 
 
