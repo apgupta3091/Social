@@ -101,7 +101,7 @@ function App() {
             <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/25">
               <span className="text-xl">🐿️</span>
             </div>
-            <h1 className="text-xl font-bold text-white">GopherSocial</h1>
+            <h1 className="text-xl font-bold text-white">Social</h1>
           </div>
           <div className="flex items-center gap-2">
             <Button

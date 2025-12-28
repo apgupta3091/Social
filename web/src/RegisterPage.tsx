@@ -86,7 +86,7 @@ export const RegisterPage: React.FC = () => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-white">
-            Join GopherSocial
+            Join Social
           </CardTitle>
           <CardDescription className="text-slate-400">
             Create an account to start sharing

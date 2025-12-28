@@ -54,7 +54,7 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-white">
-            GopherSocial
+            Social
           </CardTitle>
           <CardDescription className="text-slate-400">
             Enter your credentials to access your account
