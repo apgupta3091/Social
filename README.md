@@ -520,28 +520,6 @@ make dev
 cd web && npm install && npm run dev
 ```
 
-### Environment Variables
-
-```bash
-# Server
-ADDR=:8080
-ENV=development
-
-# Database
-DB_ADDR=postgres://admin:adminpassword@localhost/social?sslmode=disable
-
-# Redis
-REDIS_ADDR=localhost:6379
-REDIS_ENABLED=true
-
-# Auth
-AUTH_TOKEN_SECRET=your-secret-key
-
-# Email
-SENDGRID_API_KEY=SG.xxx
-FROM_EMAIL=noreply@yourdomain.com
-```
-
 ---
 
 ## 📚 API Endpoints
@@ -596,16 +574,6 @@ gcloud run deploy social \
   --region us-east4 \
   --allow-unauthenticated
 ```
-
-### Environment Variables for Production
-
-Set these in Cloud Run:
-
-- `DB_ADDR` - Supabase/Cloud SQL connection string
-- `REDIS_ENABLED=false` - Disable if not using managed Redis
-- `ENV=production`
-- `SENDGRID_API_KEY`
-- `CORS_ALLOWED_ORIGIN` - Frontend URL
 
 ---
 
