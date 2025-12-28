@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/apgupta3091/Social/compare/v1.3.0...v1.4.0) (2025-12-28)
+
+
+### Features
+
+* Update UI issues ([2b45651](https://github.com/apgupta3091/Social/commit/2b4565194785647dcdf0792ee82f7242b82db5e3))
+
 ## [1.3.0](https://github.com/apgupta3091/Social/compare/v1.2.0...v1.3.0) (2025-12-28)
 
 
